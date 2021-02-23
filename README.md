@@ -9,7 +9,9 @@ dv.view(DataFrame)
 Key presses in the view:
 
 'Within a screen (right hand):'
+
   'j: move left a column'
+  
   'k: move down a row'
   
   'l: move right a column',
