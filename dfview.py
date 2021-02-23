@@ -1,5 +1,5 @@
 #! /Library/Frameworks/Python.framework/Versions/3.6/bin/python3
-import curses as cur, pandas as pd
+import curses as cur, pandas as pd, files
 
 def get_chr_width(chr):
   """Return the screen column width for unicode ordinal o."""
@@ -304,7 +304,7 @@ class TableGrid:
         if Header: 
           self.__screen.move(0, 0)   
           if self.Index is not None:
-            self.__screen.addstr(slice_str('Row', CellWidth), self.__set_attr(StrMode, ForeColor, BackColor)) 
+            self.__screen.addstr(slice_str('Index', CellWidth), self.__set_attr(StrMode, ForeColor, BackColor)) 
             self.__screen.addstr('|', self.__set_attr(BarStrMode, BarForeColor, BarBackColor))
         else: self.__screen.move(self.__cursor_row+1, 0) 
             
@@ -747,5 +747,3 @@ def view(DataFrame=None, ObjDF=None, Bar=None, Cross=None, Index=None, Header=No
     lp.quit_screen()
     print(e)
 
-
-view()
