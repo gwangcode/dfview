@@ -31,7 +31,7 @@ This is a DataFrame view tool in Terminal based on curses.
         CellWidth: int, sets up the initial cell width, default is 8 (char width)
    
   
-3. Control keys in the view:
+3. Control keys in the view ( press 'y' to show this help information in view() ):
 
     'Within a screen (right hand):',
 
