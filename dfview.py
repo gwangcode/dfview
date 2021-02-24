@@ -134,35 +134,23 @@ class coord:
 
 pos=coord()
 
-def __make_obj_cell(x):
-  ts=text_sec()
-  ts.text=x
-  ts.col=pos.col
-  ts.row=pos.row
-  pos.row+=1
-  return ts
 
-def __make_obj_col(x):
-  r=x.map(__make_obj_cell)
-  pos.col+=1
-  pos.row=0
-  return r
 
-def make_obj_df(DataFrame):
-  r=DataFrame.apply(__make_obj_col, axis=0)
-  return r
 
 class TableGrid:
   __screen=None # screen object
   __ColorPair=[0]
 
   ObjDF=None # able to set up cell style
+  DF=None
   Bar=text_sec() # set up bar style
   Cross=text_sec() # set up cross color (bcolor, fcolor) and the select mode (fcolor)
   Index=text_sec() # set up index style, None: do not print index
   Header=text_sec() # set up header style
   
   __IndexStatus=None
+
+  __df=None
 
   # top left cornor
   __OffsetRow=0 
@@ -190,8 +178,9 @@ class TableGrid:
   def __init__(self, Screen, DataFrame=None, ObjDF=None, Bar=None): 
     self.__screen=Screen # Screen obj
     if ObjDF is not None: self.ObjDF=ObjDF
-    elif DataFrame is not None: self.ObjDF=make_obj_df(DataFrame)
+    elif DataFrame is not None: self.DF=DataFrame
     if Bar is not None: self.Bar=Bar
+    
     cur.curs_set(0)
     
   # set color pair
@@ -263,6 +252,25 @@ class TableGrid:
     self.__ResidueWidth=ResidueWidth
 
     return MaxRow, MaxCol, self.__OffsetRow, self.__OffsetCol, ScreenHeight, ScreenWidth
+
+  def __make_obj_cell(self, x):
+    ts=text_sec()
+    ts.text=x
+    ts.col=pos.col
+    ts.row=pos.row
+    pos.row+=1
+    return ts
+
+  def __make_obj_col(self, x):
+    r=x.map(self.__make_obj_cell)
+    pos.col+=1
+    pos.row=self.__OffsetRow
+    return r
+    
+
+  def make_obj_df(self, DataFrame):
+    r=DataFrame.apply(self.__make_obj_col, axis=0)
+    return r
 
   def __print_cell(self, text_sec, Header=False, Index=False):
     ScreenWidth=self.__ScreenWidth
@@ -353,17 +361,14 @@ class TableGrid:
     self.__cursor_row=0
     self.__new_line=True
     
-    MaxCol=self.__MaxCol
-    ResidueWidth=self.__ResidueWidth
-    
-    self.ObjDF.columns[self.__OffsetCol:self.__OffsetCol+MaxCol+int(bool(ResidueWidth))].map(lambda x: self.__print_cell(x, True))
+    self.__df.columns.map(lambda x: self.__print_cell(x, True))
     
   # get current cell value & type
   def __get_cell_value_type(self):
-    Row=self.__TableRow
-    Col=self.__TableCol
-    colname=self.ObjDF.columns[Col]
-    value=self.ObjDF.iloc[Row, Col].text
+    Row=self.__TableRow-self.__OffsetRow
+    Col=self.__TableCol-self.__OffsetCol
+    colname=self.__df.columns[Col]
+    value=self.__df.iloc[Row, Col].text
     dtype=type(value)
     return value, dtype, Row, colname
 
@@ -401,10 +406,15 @@ class TableGrid:
     self.__screen.move(0,0)
     
     EndCol=MaxCol+int(bool(ResidueWidth))
-    df=self.ObjDF.iloc[self.__OffsetRow:self.__OffsetRow+MaxRow, self.__OffsetCol:self.__OffsetCol+EndCol]#.reset_index(drop=True) # slice dataframe to the screen size
+    pos.row=self.__OffsetRow
+    pos.col=self.__OffsetCol
+    if self.DF is not None: 
+      df=self.DF.iloc[self.__OffsetRow:self.__OffsetRow+MaxRow, self.__OffsetCol:self.__OffsetCol+EndCol] # slice dataframe to the screen size
+      self.__df=self.make_obj_df(df)
+    else: self.__df=self.ObjDF.iloc[self.__OffsetRow:self.__OffsetRow+MaxRow, self.__OffsetCol:self.__OffsetCol+EndCol] # slice dataframe to the screen size
     
     self.__print_header()
-    df.apply(self.__print_line, axis=1)
+    self.__df.apply(self.__print_line, axis=1)
     
 class loop:
   scr=None
@@ -691,12 +701,13 @@ def view(DataFrame=None, ObjDF=None, Bar=None, Cross=None, Index=None, Header=No
 
   if Header is None: Header=defaultHeader
 
-  try:
+  #try:
+  if True:
     lp=loop()
 
     # initialize DataFrame:
     if ObjDF is not None: 
-      t=TableGrid(lp.scr, ObjDF==ObjDF)
+      t=TableGrid(lp.scr, ObjDF=ObjDF)
       keyPV.dfRows, keyPV.dfCols=ObjDF.shape # numbers of rows & cols of dataframe
     elif DataFrame is not None: 
       t=TableGrid(lp.scr, DataFrame=DataFrame)
@@ -743,7 +754,9 @@ def view(DataFrame=None, ObjDF=None, Bar=None, Cross=None, Index=None, Header=No
 
     lp.run(Func=lambda key: handle_key(key, (t, h), (keyPV, hkeyPV), lp))
   
+  '''
   except Exception as e:
     lp.quit_screen()
     print(e)
 
+  '''
