@@ -1,5 +1,5 @@
 #! /Library/Frameworks/Python.framework/Versions/3.6/bin/python3
-import curses as cur, pandas as pd, files
+import curses as cur, pandas as pd
 
 def get_chr_width(chr):
   """Return the screen column width for unicode ordinal o."""
