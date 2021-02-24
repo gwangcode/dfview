@@ -1,5 +1,5 @@
 # dfview
-terminal DataFrame view tool
+
 This is a DataFrame view tool in Terminal based on curses.
 
 1. Usage:
