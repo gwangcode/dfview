@@ -70,4 +70,6 @@ Key presses in the view:
 
   'Q: quit'
   
+  Example shows like the following:
+  
   ![Alt text](https://github.com/gwangcode/dfview/blob/main/dfview_sample.png)
